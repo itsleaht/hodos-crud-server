@@ -104,7 +104,7 @@ app.get('/api/assets/images/:path/:fileName', (req, res) => {
   const path = req.params.path
   const fileName = req.params.fileName
   const options = {
-    root: __dirname + '/public/',
+    root: __dirname + '/public/images/' + path,
     dotfiles: 'deny',
     headers: {
         'x-timestamp': Date.now(),
