@@ -100,6 +100,18 @@ app.get('/api/chapters/:id', (req, res) => {
     })
 })
 
+app.get('/api/public/assets/images/:path/:fileName', (req, res) => {
+  const path = req.params.path
+  const fileName = req.params.fileName
+  res.sendFile(fileName, {}, function (err) {
+    if (err) {
+      next(err);
+    } else {
+      console.log('Sent:', fileName);
+    }
+  });
+})
+
 
 /* ------------ */
 /* Edit actions */
