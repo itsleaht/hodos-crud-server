@@ -1,15 +1,18 @@
 const express = require('express')
 const fs = require('fs')
 const path = require('path')
+const multer = require('multer')
+const fileUpload = require('express-fileupload')
 const app = express()
 
-const PERSONNAGES_FILE = path.join(__dirname, './data/personnages.json')
-const LIEUX_FILE = path.join(__dirname, './data/lieux.json')
+const CHARACTERS_FILE = path.join(__dirname, './data/characters.json')
+const PLACES_FILE = path.join(__dirname, './data/places.json')
 
 app.set('port', (process.env.PORT || 3000))
 
 app.use('/', express.static(__dirname))
 app.use(express.json())       // to support JSON-encoded bodies
+app.use(fileUpload())
 
 // Additional middleware which will set headers that we need on each request.
 app.use( (req, res, next) => {
@@ -31,8 +34,8 @@ app.get('/api', function (req, res) {
 /* ------------ */
 /* View actions */
 /* ------------ */
-app.get('/api/personnages', (req, res) => {
-  fs.readFile(PERSONNAGES_FILE, (err, data) => {
+app.get('/api/characters', (req, res) => {
+  fs.readFile(CHARACTERS_FILE, (err, data) => {
     if (err) {
       console.error(err)
       process.exit(1)
@@ -41,8 +44,8 @@ app.get('/api/personnages', (req, res) => {
   })
 })
 
-app.get('/api/lieux', (req, res) => {
-  fs.readFile(LIEUX_FILE, (err, data) => {
+app.get('/api/places', (req, res) => {
+  fs.readFile(PLACES_FILE, (err, data) => {
     if (err) {
       console.error(err)
       process.exit(1)
@@ -51,45 +54,45 @@ app.get('/api/lieux', (req, res) => {
   })
 })
 
-app.get('/api/personnages/:id', (req, res) => {
-  fs.readFile(PERSONNAGES_FILE, (err, data) => {
+app.get('/api/characters/:id', (req, res) => {
+  fs.readFile(CHARACTERS_FILE, (err, data) => {
     if (err) {
       console.error(err)
       process.exit(1)
     }
     const json = JSON.parse(data)
-    const personnage = utils.findOneById(req.params.id, json)
-    res.json(personnage.object)
+    const character = utils.findOneById(req.params.id, json)
+    res.json(character.object)
   })
 })
 
-app.get('/api/lieux/:id', (req, res) => {
-  fs.readFile(LIEUX_FILE, (err, data) => {
+app.get('/api/places/:id', (req, res) => {
+  fs.readFile(PLACES_FILE, (err, data) => {
     if (err) {
       console.error(err)
       process.exit(1)
     }
     const json = JSON.parse(data)
-    const lieu = utils.findOneById(req.params.id, json)
-    res.json(lieu.object)
+    const place = utils.findOneById(req.params.id, json)
+    res.json(place.object)
   })
 })
 
 /* ------------ */
 /* Edit actions */
 /* ------------ */
-app.patch('/api/personnages/edit/:id', (req, res) => {
-  fs.readFile(PERSONNAGES_FILE, (err, data) => {
+app.patch('/api/characters/edit/:id', (req, res) => {
+  fs.readFile(CHARACTERS_FILE, (err, data) => {
     if (err) {
       console.error(err)
       process.exit(1)
     }
     const json = JSON.parse(data)
     const bodyRequest = req.body
-    const formerPersonnage = utils.findOneById(req.params.id, json)
+    const formerCharacter = utils.findOneById(req.params.id, json)
 
-    const newPersonnage = {
-      id: formerPersonnage.object.id,
+    const newCharacter = {
+      id: formerCharacter.object.id,
       name: bodyRequest.name,
       type: bodyRequest.type,
       role: bodyRequest.role,
@@ -98,9 +101,9 @@ app.patch('/api/personnages/edit/:id', (req, res) => {
       family: bodyRequest.family
     }
 
-    json[formerPersonnage.index] = newPersonnage
+    json[formerCharacter.index] = newCharacter
 
-    fs.writeFile(PERSONNAGES_FILE, JSON.stringify(json, null, 4), function(err) {
+    fs.writeFile(CHARACTERS_FILE, JSON.stringify(json, null, 4), function(err) {
       if (err) {
         console.error(err)
         process.exit(1)
@@ -110,25 +113,25 @@ app.patch('/api/personnages/edit/:id', (req, res) => {
   })
 })
 
-app.patch('/api/lieux/edit/:id', (req, res) => {
-  fs.readFile(LIEUX_FILE, (err, data) => {
+app.patch('/api/places/edit/:id', (req, res) => {
+  fs.readFile(PLACES_FILE, (err, data) => {
     if (err) {
       console.error(err)
       process.exit(1)
     }
     const json = JSON.parse(data)
     const bodyRequest = req.body
-    const formerLieu = utils.findOneById(req.params.id, json)
+    const formerPlace = utils.findOneById(req.params.id, json)
 
-    const newLieu = {
-      id: formerLieu.object.id,
+    const newPlace = {
+      id: formerPlace.object.id,
       name: bodyRequest.name,
       chapters: bodyRequest.chapters
     }
 
-    json[formerLieu.index] = newLieu
+    json[formerPlace.index] = newPlace
 
-    fs.writeFile(LIEUX_FILE, JSON.stringify(json, null, 4), function(err) {
+    fs.writeFile(PLACES_FILE, JSON.stringify(json, null, 4), function(err) {
       if (err) {
         console.error(err)
         process.exit(1)
@@ -141,19 +144,21 @@ app.patch('/api/lieux/edit/:id', (req, res) => {
 /* ------------ */
 /* Create actions */
 /* ------------ */
-app.post('/api/personnages/create', (req, res) => {
+app.post('/api/characters/create', (req, res) => {
 
-  fs.readFile(PERSONNAGES_FILE, (err, data) => {
+  fs.readFile(CHARACTERS_FILE, (err, data) => {
+      console.log(req)
     if (err) {
       console.error(err)
       process.exit(1)
     }
-    const personnages = JSON.parse(data)
-
-    const newId = personnages.length > 0 ? personnages[personnages.length - 1].id + 1 : 0
+    const characters = JSON.parse(data)
+    
+    const newId = characters.length > 0 ? characters[characters.length - 1].id + 1 : 0
     const bodyRequest = req.body
 
-    var newPersonnage = {
+
+    var newCharacter = {
       id: newId,
       name: bodyRequest.name,
       type: bodyRequest.type,
@@ -163,43 +168,66 @@ app.post('/api/personnages/create', (req, res) => {
       family: bodyRequest.family
     }
 
-    personnages.push(newPersonnage)
+    characters.push(newCharacter)
 
-    fs.writeFile(PERSONNAGES_FILE, JSON.stringify(personnages, null, 4), function(err) {
+    if (req.files) {
+        console.log(req.files['persoImage'])
+        const persoImage = req.files.persoImage
+        // if (persoImage && persoImage.length) {
+        //     console.log(persoImage)
+        persoImage.mv('Image/persoImage.jpg', function(err) {
+            console.log("test")
+            if (err)
+                console.log(res.status(500).send(err)) 
+            res.send('File uploaded!')
+        })
+
+        // upload.single('persoImage', res, function (err) {
+        //     if (err) {
+        //       // An error occurred when uploading
+        //       console.log(err)
+        //       return
+        //     }
+        
+        //     //Everything went fine
+        //   })
+    }
+
+    fs.writeFile(CHARACTERS_FILE, JSON.stringify(characters, null, 4), function(err) {
       if (err) {
         console.error(err)
         process.exit(1)
       }
-      res.json(personnages)
+      res.json(characters)
     })
   })
 })
 
-app.post('/api/lieux/create', (req, res) => {
+app.post('/api/places/create', (req, res) => {
 
-  fs.readFile(LIEUX_FILE, (err, data) => {
+  fs.readFile(PLACES_FILE, (err, data) => {
     if (err) {
       console.error(err)
       process.exit(1)
     }
-    const lieux = JSON.parse(data)
-    const newId = lieux.length > 0? lieux[lieux.length - 1].id + 1 : 0
+    const places = JSON.parse(data)
+    const newId = places.length > 0? places[places.length - 1].id + 1 : 0
     const bodyRequest = req.body
 
-    var newLieu = {
+    var newPlace = {
       id: newId,
       name: bodyRequest.name,
       chapters: bodyRequest.chapters
     }
 
-    lieux.push(newLieu)
+    places.push(newPlace)
 
-    fs.writeFile(LIEUX_FILE, JSON.stringify(lieux, null, 4), function(err) {
+    fs.writeFile(PLACES_FILE, JSON.stringify(places, null, 4), function(err) {
       if (err) {
         console.error(err)
         process.exit(1)
       }
-      res.json(lieux)
+      res.json(places)
     })
   })
 })
@@ -207,18 +235,18 @@ app.post('/api/lieux/create', (req, res) => {
 /* ------------ */
 /* Delete actions */
 /* ------------ */
-app.delete('/api/personnages/delete/:id', function(req, res) {
-  fs.readFile(PERSONNAGES_FILE, function(err, data) {
+app.delete('/api/characters/delete/:id', function(req, res) {
+  fs.readFile(CHARACTERS_FILE, function(err, data) {
     if (err) {
       console.error(err)
       process.exit(1)
     }
     const json = JSON.parse(data);
-    const personnage = utils.findOneById(req.params.id, json)
+    const character = utils.findOneById(req.params.id, json)
 
-    json.splice(personnage.index, 1)
+    json.splice(character.index, 1)
 
-    fs.writeFile(PERSONNAGES_FILE, JSON.stringify(json, null, 4), function(err) {
+    fs.writeFile(CHARACTERS_FILE, JSON.stringify(json, null, 4), function(err) {
       if (err) {
         console.error(err)
         process.exit(1)
@@ -228,18 +256,18 @@ app.delete('/api/personnages/delete/:id', function(req, res) {
   })
 })
 
-app.delete('/api/lieux/delete/:id', function(req, res) {
-  fs.readFile(LIEUX_FILE, function(err, data) {
+app.delete('/api/places/delete/:id', function(req, res) {
+  fs.readFile(PLACES_FILE, function(err, data) {
     if (err) {
       console.error(err)
       process.exit(1)
     }
     const json = JSON.parse(data);
-    const lieu = utils.findOneById(req.params.id, json)
+    const place = utils.findOneById(req.params.id, json)
 
-    json.splice(lieu.index, 1)
+    json.splice(place.index, 1)
 
-    fs.writeFile(LIEUX_FILE, JSON.stringify(json, null, 4), function(err) {
+    fs.writeFile(PLACES_FILE, JSON.stringify(json, null, 4), function(err) {
       if (err) {
         console.error(err)
         process.exit(1)
@@ -263,6 +291,28 @@ const utils = {
     }
   }
 }
+
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, "/Image");
+    },
+    filename: (req, file, callback) => {
+        callback(null, file.fieldname + "_" + Date.now() + "_" + file.originalname);
+    }
+});
+
+const upload = multer({
+    dest: './Image',
+    limits: {
+        fileSize: 10000000
+    }
+    
+})
+
+const charactersFilesNames = [
+    'persoImage',
+    'placeImage'
+]
 
 app.listen(3000, () => {
   console.log('Example app listening on port 3000!')
