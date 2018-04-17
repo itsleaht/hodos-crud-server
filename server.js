@@ -6,6 +6,7 @@ const app = express()
 
 const CHARACTERS_FILE = path.join(__dirname, './data/characters.json')
 const PLACES_FILE = path.join(__dirname, './data/places.json')
+const CHAPTERS_FILE = path.join(__dirname, './data/chapters.json')
 
 app.set('port', (process.env.PORT || 3000))
 
@@ -53,6 +54,16 @@ app.get('/api/places', (req, res) => {
   })
 })
 
+app.get('/api/chapters', (req, res) => {
+    fs.readFile(CHAPTERS_FILE, (err, data) => {
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
+      res.json(JSON.parse(data))
+    })
+})
+
 app.get('/api/characters/:id', (req, res) => {
   fs.readFile(CHARACTERS_FILE, (err, data) => {
     if (err) {
@@ -76,6 +87,19 @@ app.get('/api/places/:id', (req, res) => {
     res.json(place.object)
   })
 })
+
+app.get('/api/chapters/:id', (req, res) => {
+    fs.readFile(CHAPTERS_FILE, (err, data) => {
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
+        const json = JSON.parse(data)
+        const place = utils.findOneById(req.params.id, json)
+        res.json(place.object)
+    })
+})
+
 
 /* ------------ */
 /* Edit actions */
@@ -140,6 +164,38 @@ app.patch('/api/places/edit/:id', (req, res) => {
   })
 })
 
+app.patch('/api/chapters/edit/:id', (req, res) => {
+  fs.readFile(CHAPTERS_FILE, (err, data) => {
+    if (err) {
+      console.error(err)
+      process.exit(1)
+    }
+    const json = JSON.parse(data)
+    const bodyRequest = req.body
+    const formerChapter = utils.findOneById(req.params.id, json)
+
+    const newChapter = {
+      id: formerChapter.object.id,
+      title: bodyRequest.title,
+      numberInt: bodyRequest.numberInt,
+      numberRoman: bodyRequest.numberRoman,
+      beginText: bodyRequest.beginText,
+      previously: bodyRequest.previously,
+      textBlocks: bodyRequest.textBlocks,
+    }
+
+    json[formerChapter.index] = newChapter
+
+    fs.writeFile(CHAPTERS_FILE, JSON.stringify(json, null, 4), function(err) {
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
+      res.json(json)
+    })
+  })
+})
+
 /* ------------ */
 /* Create actions */
 /* ------------ */
@@ -151,7 +207,7 @@ app.post('/api/characters/create', (req, res) => {
       process.exit(1)
     }
     const characters = JSON.parse(data)
-    
+
     const newId = characters.length > 0 ? characters[characters.length - 1].id + 1 : 0
     const bodyRequest = req.body
 
@@ -168,7 +224,7 @@ app.post('/api/characters/create', (req, res) => {
 
     characters.push(newCharacter)
 
-    
+
     if (req.files) {
         const profileImageName = charactersFilesNames[0]
         const mapImagename = charactersFilesNames[1]
@@ -228,6 +284,39 @@ app.post('/api/places/create', (req, res) => {
   })
 })
 
+app.post('/api/chapters/create', (req, res) => {
+
+  fs.readFile(CHAPTERS_FILE, (err, data) => {
+    if (err) {
+      console.error(err)
+      process.exit(1)
+    }
+    const chapters = JSON.parse(data)
+    const newId = chapters.length > 0 ? chapters[chapters.length - 1].id + 1 : 0
+    const bodyRequest = req.body
+
+    var newChapter = {
+      id: newId,
+      title: bodyRequest.title,
+      numberInt: bodyRequest.numberInt,
+      numberRoman: bodyRequest.numberRoman,
+      beginText: bodyRequest.beginText,
+      previously: bodyRequest.previously,
+      textBlocks: bodyRequest.textBlocks,
+    }
+
+    chapters.push(newChapter)
+
+    fs.writeFile(PLACES_FILE, JSON.stringify(chapters, null, 4), function(err) {
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
+      res.json(chapters)
+    })
+  })
+})
+
 /* ------------ */
 /* Delete actions */
 /* ------------ */
@@ -264,6 +353,27 @@ app.delete('/api/places/delete/:id', function(req, res) {
     json.splice(place.index, 1)
 
     fs.writeFile(PLACES_FILE, JSON.stringify(json, null, 4), function(err) {
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
+      res.json(json);
+     })
+  })
+})
+
+app.delete('/api/chapters/delete/:id', function(req, res) {
+  fs.readFile(CHAPTERS_FILE, function(err, data) {
+    if (err) {
+      console.error(err)
+      process.exit(1)
+    }
+    const json = JSON.parse(data);
+    const chapter = utils.findOneById(req.params.id, json)
+
+    json.splice(chapter.index, 1)
+
+    fs.writeFile(CHAPTERS_FILE, JSON.stringify(json, null, 4), function(err) {
       if (err) {
         console.error(err)
         process.exit(1)
