@@ -307,7 +307,7 @@ app.post('/api/chapters/create', (req, res) => {
 
     chapters.push(newChapter)
 
-    fs.writeFile(PLACES_FILE, JSON.stringify(chapters, null, 4), function(err) {
+    fs.writeFile(CHAPTERS_FILE, JSON.stringify(chapters, null, 4), function(err) {
       if (err) {
         console.error(err)
         process.exit(1)
