@@ -1,7 +1,6 @@
 const express = require('express')
 const fs = require('fs')
 const path = require('path')
-const multer = require('multer')
 const fileUpload = require('express-fileupload')
 const app = express()
 
@@ -147,7 +146,6 @@ app.patch('/api/places/edit/:id', (req, res) => {
 app.post('/api/characters/create', (req, res) => {
 
   fs.readFile(CHARACTERS_FILE, (err, data) => {
-      console.log(req)
     if (err) {
       console.error(err)
       process.exit(1)
@@ -170,27 +168,25 @@ app.post('/api/characters/create', (req, res) => {
 
     characters.push(newCharacter)
 
+    
     if (req.files) {
-        console.log(req.files['persoImage'])
-        const persoImage = req.files.persoImage
-        // if (persoImage && persoImage.length) {
-        //     console.log(persoImage)
-        persoImage.mv('Image/persoImage.jpg', function(err) {
-            console.log("test")
-            if (err)
-                console.log(res.status(500).send(err)) 
-            res.send('File uploaded!')
-        })
+        const profileImageName = charactersFilesNames[0]
+        const mapImagename = charactersFilesNames[1]
+        if (req.files[profileImageName]) {
+            const profileImage = req.files[profileImageName]
+            profileImage.mv('public/assets/images/'+profileImageName+'/'+newId+'.jpg', function(err) {
+                if (err)
+                    console.log(res.status(500).send(err))
+            })
+        }
 
-        // upload.single('persoImage', res, function (err) {
-        //     if (err) {
-        //       // An error occurred when uploading
-        //       console.log(err)
-        //       return
-        //     }
-        
-        //     //Everything went fine
-        //   })
+        if (req.files[mapImagename]) {
+            const mapImage = req.files[mapImagename]
+            mapImage.mv('public/assets/images/'+mapImagename+'/'+newId+'.jpg', function(err) {
+                if (err)
+                    console.log(res.status(500).send(err))
+            })
+        }
     }
 
     fs.writeFile(CHARACTERS_FILE, JSON.stringify(characters, null, 4), function(err) {
@@ -292,26 +288,9 @@ const utils = {
   }
 }
 
-const storage = multer.diskStorage({
-    destination: (req, file, callback) => {
-        callback(null, "/Image");
-    },
-    filename: (req, file, callback) => {
-        callback(null, file.fieldname + "_" + Date.now() + "_" + file.originalname);
-    }
-});
-
-const upload = multer({
-    dest: './Image',
-    limits: {
-        fileSize: 10000000
-    }
-    
-})
-
 const charactersFilesNames = [
-    'persoImage',
-    'placeImage'
+    'profile',
+    'map'
 ]
 
 app.listen(3000, () => {
