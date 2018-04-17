@@ -230,7 +230,8 @@ app.post('/api/characters/create', (req, res) => {
         const mapImagename = charactersFilesNames[1]
         if (req.files[profileImageName]) {
             const profileImage = req.files[profileImageName]
-            profileImage.mv('public/assets/images/'+profileImageName+'/'+newId+'.jpg', function(err) {
+            const extension = profileImage.name.split('.').pop();
+            profileImage.mv('public/assets/images/'+profileImageName+'/'+newId+'.'+extension, function(err) {
                 if (err)
                     console.log(res.status(500).send(err))
             })

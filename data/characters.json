@@ -7,5 +7,21 @@
         "place": "0",
         "description": "Hermès est le personnage principal de l'histoire.",
         "family": "Hermès est le fils de Maia et Zeus."
+    },
+    {
+        "id": 1,
+        "name": "Hermès",
+        "type": "",
+        "role": "",
+        "description": "",
+        "family": ""
+    },
+    {
+        "id": 2,
+        "name": "Hermès",
+        "type": "",
+        "role": "",
+        "description": "",
+        "family": ""
     }
 ]
