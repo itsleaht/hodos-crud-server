@@ -1,1 +1,15 @@
-[]
+[
+    {
+        "id": 0,
+        "title": "Où Hermès mange un harricot magique",
+        "numberInt": "5",
+        "numberRoman": "V",
+        "beginText": "Hermès arriva devant le mont Parnasse.",
+        "previously": "Hermès est monté découvrir Jacques et son grand haricot magique et a décidé de le voler.",
+        "textBlocks": [
+            "Hermès prit son harricot magique et recita la formule \"oh mon cher harricot, comme tu es beau !\"",
+            "\nIl l'attrapa par le haut et commença à l'éplucher.",
+            "\nIl l'avala tout cru et faillit s'étouffer avec"
+        ]
+    }
+]
