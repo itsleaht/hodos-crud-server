@@ -100,11 +100,11 @@ app.get('/api/chapters/:id', (req, res) => {
     })
 })
 
-app.get('/api/assets/images/:path/:fileName', (req, res) => {
+app.get('/api/images/:path/:fileName/:ext', (req, res) => {
   const path = req.params.path
-  const fileName = req.params.fileName
+  const fileName = req.params.fileName + '.' + req.params.ext
   const options = {
-    root: __dirname + '/public/images/' + path,
+    root: __dirname + '/public/assets/images/' + path,
     dotfiles: 'deny',
     headers: {
         'x-timestamp': Date.now(),
@@ -114,7 +114,8 @@ app.get('/api/assets/images/:path/:fileName', (req, res) => {
   };
   res.sendFile(fileName, options, function (err) {
     if (err) {
-      next(err);
+      console.log(err);
+      res.json([])
     } else {
       console.log('Sent:', fileName);
     }
